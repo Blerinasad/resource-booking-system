@@ -36,3 +36,6 @@ temp/
 # database files (nëse krijohen lokalisht)
 *.sqlite
 *.db
+
+# scripts
+*.ps1
