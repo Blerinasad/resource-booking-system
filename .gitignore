@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+
+# env files
+.env
+
+
+# logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# build folders
+dist/
+build/
+
+# coverage
+coverage/
+
+# Docker
+*.pid
+*.seed
+
+# IDE
+.vscode/
+.idea/
+
+# temp
+tmp/
+temp/
+
+# database files (nëse krijohen lokalisht)
+*.sqlite
+*.db
