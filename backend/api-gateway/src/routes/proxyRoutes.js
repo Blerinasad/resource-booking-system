@@ -12,20 +12,18 @@ router.use(
   createProxyMiddleware({
     target: services.auth,
     changeOrigin: true,
-    pathRewrite: {
-      "^/auth": "/auth",
-    },
-  })
+    pathRewrite: (path) => `/auth${path}`,
+  }),
 );
 
 router.use(
-  "/resources/admin",
+  "/users",
   authMiddleware,
-  roleMiddleware("admin"),
   createProxyMiddleware({
-    target: services.resource,
+    target: services.auth,
     changeOrigin: true,
-  })
+    pathRewrite: (path) => `/users${path}`,
+  }),
 );
 
 router.use(
@@ -34,7 +32,8 @@ router.use(
   createProxyMiddleware({
     target: services.resource,
     changeOrigin: true,
-  })
+    pathRewrite: (path) => `/resources${path}`,
+  }),
 );
 
 router.use(
@@ -44,7 +43,8 @@ router.use(
   createProxyMiddleware({
     target: services.booking,
     changeOrigin: true,
-  })
+    pathRewrite: (path) => `/bookings/admin${path}`,
+  }),
 );
 
 router.use(
@@ -53,7 +53,8 @@ router.use(
   createProxyMiddleware({
     target: services.booking,
     changeOrigin: true,
-  })
+    pathRewrite: (path) => `/bookings${path}`,
+  }),
 );
 
 router.use(
@@ -63,7 +64,8 @@ router.use(
   createProxyMiddleware({
     target: services.booking,
     changeOrigin: true,
-  })
+    pathRewrite: (path) => `/analytics${path}`,
+  }),
 );
 
 export default router;
