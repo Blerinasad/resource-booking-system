@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('backend/api-gateway') {
+                    bat 'npm install'
+                }
+                dir('backend/services/auth-service') {
+                    bat 'npm install'
+                }
+                dir('backend/services/resource-service') {
+                    bat 'npm install'
+                }
+                dir('backend/services/booking-analytics-service') {
+                    bat 'npm install'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir('backend') {
+                    bat 'docker compose build'
+                }
+            }
+        }
+
+        stage('Docker Up') {
+            steps {
+                dir('backend') {
+                    bat 'docker compose up -d'
+                }
+            }
+        }
+
+        stage('Health Checks') {
+            steps {
+                bat 'powershell -Command "Start-Sleep -Seconds 25"'
+                bat 'powershell -Command "Invoke-RestMethod http://localhost:5000/health"'
+                bat 'powershell -Command "Invoke-RestMethod http://localhost:5001/health"'
+                bat 'powershell -Command "Invoke-RestMethod http://localhost:5002/health"'
+                bat 'powershell -Command "Invoke-RestMethod http://localhost:5003/health"'
+            }
+        }
+    }
+
+    post {
+        always {
+            dir('backend') {
+                bat 'docker compose ps'
+            }
+        }
+    }
+}

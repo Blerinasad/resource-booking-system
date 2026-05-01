@@ -1,7 +1,7 @@
-import kafkaClient from "../config/kafka.js";
+import {publishEvent} from "../config/kafka.js";
 
 export const publishBookingEvent = async (eventType, booking) => {
-  await kafkaClient.publish(eventType, {
+  await publishEvent(eventType, {
     id: booking.id,
     userId: booking.userId,
     resourceId: booking.resourceId,

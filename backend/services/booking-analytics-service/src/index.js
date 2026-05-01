@@ -2,20 +2,21 @@ import app from "./app.js";
 import sequelize from "./config/mysql.js";
 import { connectMongo } from "./config/mongo.js";
 import env from "./config/env.js";
-import kafkaClient from "./config/kafka.js";
+import { connectProducer } from "./config/kafka.js";
 import { startBookingStatusJob } from "./jobs/bookingStatusJob.js";
 import { startBookingConsumer } from "./events/bookingConsumer.js";
+import connectWithRetry from "./utils/connectWithRetry.js";
 
 const startServer = async () => {
   try {
-    await sequelize.authenticate();
-    console.log("MySQL connected successfully");
+    await connectWithRetry(sequelize);
+
 
     await sequelize.sync({ alter: true });
     console.log("Booking database synced successfully");
 
     await connectMongo();
-    await kafkaClient.connect();
+    await connectProducer();
     await startBookingConsumer();
 
     startBookingStatusJob();
@@ -24,7 +25,7 @@ const startServer = async () => {
       console.log(`Booking analytics service running on port ${env.port}`);
     });
   } catch (error) {
-    console.error("Failed to start booking analytics service:", error.message);
+    console.error("Failed to start auth service:", error);
     process.exit(1);
   }
 };

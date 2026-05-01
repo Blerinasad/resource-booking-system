@@ -1,7 +1,7 @@
-import kafkaClient from "../config/kafka.js";
+import {publishEvent} from "../config/kafka.js";
 
 export const publishResourceCreated = async (resource) => {
-  await kafkaClient.publish("resource.created", {
+  await publishEvent("resource.created", {
     id: resource.id,
     name: resource.name,
     type: resource.type,
@@ -11,7 +11,7 @@ export const publishResourceCreated = async (resource) => {
 };
 
 export const publishResourceUpdated = async (resource) => {
-  await kafkaClient.publish("resource.updated", {
+  await publishEvent("resource.updated", {
     id: resource.id,
     name: resource.name,
     type: resource.type,
@@ -21,7 +21,7 @@ export const publishResourceUpdated = async (resource) => {
 };
 
 export const publishResourceDeleted = async (resource) => {
-  await kafkaClient.publish("resource.deleted", {
+  await publishEvent("resource.deleted", {
     id: resource.id,
     name: resource.name,
     deletedAt: new Date(),
