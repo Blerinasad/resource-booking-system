@@ -1,85 +1,132 @@
-import { Activity, BarChart3, CalendarCheck, Database, Server, ShieldCheck, Zap } from "lucide-react";
-import useAuth from "../../hooks/useAuth";
-import Card from "../../components/common/Card";
-import Badge from "../../components/common/Badge";
-import PageHeader from "../../components/common/PageHeader";
-
-const stats = [
-  { title: "Security", value: "JWT + RBAC", icon: ShieldCheck, tone: "cyan" },
-  { title: "Architecture", value: "Microservices", icon: Server, tone: "violet" },
-  { title: "Storage", value: "MySQL + Mongo", icon: Database, tone: "green" },
-  { title: "Events", value: "Kafka Ready", icon: Zap, tone: "cyan" },
-];
-
-const phases = ["Auth service healthy", "Resource service healthy", "Booking analytics healthy", "API Gateway healthy"];
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  CalendarCheck, Database, CheckCircle, Clock,
+  XCircle, TrendingUp, ArrowRight, Activity
+} from 'lucide-react'
+import { StatCard } from '../../components/common/Card.jsx'
+import { StatusBadge } from '../../components/common/Badge.jsx'
+import { analyticsService, bookingService } from '../../services/index.js'
+import Loader from '../../components/common/Loader.jsx'
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const [stats, setStats]       = useState(null)
+  const [bookings, setBookings] = useState([])
+  const [loading, setLoading]   = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [s, b] = await Promise.allSettled([
+          analyticsService.summary(),
+          bookingService.getAll({ limit: 6, sort: 'desc' }),
+        ])
+        if (s.status === 'fulfilled') setStats(s.value?.data || s.value)
+        if (b.status === 'fulfilled') {
+          const raw = b.value?.data?.bookings || b.value?.data || b.value || []
+          setBookings(Array.isArray(raw) ? raw.slice(0, 6) : [])
+        }
+      } catch {}
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) return <Loader />
 
   return (
-    <div className="animate-fadeIn">
-      <PageHeader
-        eyebrow="Control Center"
-        title="Smart Resource Booking"
-        description="A premium dashboard shell for your Dockerized microservices backend. Phase 1 covers auth, routing, layout and API connection."
-      />
-
-      <div className="mb-8 flex flex-wrap gap-3">
-        <Badge tone="cyan">Logged as {user?.role || "user"}</Badge>
-        <Badge tone="violet">API Gateway: localhost:5000</Badge>
-        <Badge tone="green">Frontend Phase 1</Badge>
+    <div className="space-y-8 animate-fade-in">
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <StatCard label="Total Bookings" value={stats?.totalBookings ?? 0}     icon={CalendarCheck} color="brand"  delay={0}   />
+        <StatCard label="Pending"        value={stats?.pendingBookings ?? 0}   icon={Clock}         color="amber"  delay={50}  />
+        <StatCard label="Approved"       value={stats?.approvedBookings ?? 0}  icon={CheckCircle}   color="brand"  delay={100} />
+        <StatCard label="Completed"      value={stats?.completedBookings ?? 0} icon={TrendingUp}    color="blue"   delay={150} />
+        <StatCard label="Cancelled"      value={stats?.cancelledBookings ?? 0} icon={XCircle}       color="red"    delay={200} />
+        <StatCard label="No-show"        value={stats?.noShowBookings ?? 0}    icon={Activity}      color="slate"  delay={250} />
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {stats.map((item, index) => {
-          const Icon = item.icon;
+      {/* Recent bookings table */}
+      <div className="card animate-fade-in-delay-1">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="font-display font-bold text-white">Recent Bookings</h3>
+            <p className="text-xs text-slate-500 mt-0.5 font-mono">Latest reservation activity</p>
+          </div>
+          <Link
+            to="/dashboard/bookings"
+            className="flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors"
+          >
+            View all <ArrowRight size={13} />
+          </Link>
+        </div>
+
+        {bookings.length === 0 ? (
+          <div className="py-12 text-center text-slate-500">
+            <CalendarCheck size={32} className="mx-auto mb-3 opacity-30" />
+            <p className="text-sm">No bookings yet</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.05]">
+                  {['ID', 'Resource', 'User', 'Start', 'End', 'Status'].map(h => (
+                    <th key={h} className="text-left pb-3 text-xs font-mono text-slate-500 uppercase tracking-wider pr-4">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.03]">
+                {bookings.map((b) => (
+                  <tr key={b.id} className="group hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3 pr-4 font-mono text-xs text-slate-500">#{b.id}</td>
+                    <td className="py-3 pr-4 text-slate-200 font-semibold">{b.resourceId ?? '—'}</td>
+                    <td className="py-3 pr-4 text-slate-400">{b.userId ?? '—'}</td>
+                    <td className="py-3 pr-4 font-mono text-xs text-slate-400">
+                      {b.startTime ? new Date(b.startTime).toLocaleString() : '—'}
+                    </td>
+                    <td className="py-3 pr-4 font-mono text-xs text-slate-400">
+                      {b.endTime ? new Date(b.endTime).toLocaleString() : '—'}
+                    </td>
+                    <td className="py-3">
+                      <StatusBadge status={b.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in-delay-2">
+        {[
+          { label: 'New Booking',   to: '/dashboard/bookings',  icon: CalendarCheck, desc: 'Reserve a resource'     },
+          { label: 'Resources',     to: '/dashboard/resources', icon: Database,      desc: 'View all resources'     },
+          { label: 'Analytics',     to: '/dashboard/analytics', icon: TrendingUp,    desc: 'Usage insights'         },
+        ].map((a) => {
+          const Icon = a.icon
           return (
-            <Card key={item.title} className="animate-slideUp transition duration-300 hover:-translate-y-1 hover:bg-white/[0.08]" style={{ animationDelay: `${index * 80}ms` }}>
-              <div className="mb-5 flex items-center justify-between">
-                <div className="grid h-13 w-13 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/20 to-violet-500/20 text-cyan-200">
-                  <Icon size={24} />
-                </div>
-                <Activity className="text-slate-600" size={18} />
+            <Link
+              key={a.to}
+              to={a.to}
+              className="card glass-hover group flex items-center gap-4"
+            >
+              <div className="p-3 rounded-xl bg-brand-500/10 border border-brand-500/20 group-hover:bg-brand-500/15 transition-colors">
+                <Icon size={20} className="text-brand-400" />
               </div>
-              <p className="text-sm text-slate-400">{item.title}</p>
-              <h3 className="mt-2 text-2xl font-black text-white">{item.value}</h3>
-            </Card>
-          );
+              <div>
+                <p className="font-semibold text-white">{a.label}</p>
+                <p className="text-xs text-slate-500">{a.desc}</p>
+              </div>
+              <ArrowRight size={16} className="ml-auto text-slate-600 group-hover:text-brand-400 transition-colors" />
+            </Link>
+          )
         })}
       </div>
-
-      <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-black text-white">System Overview</h2>
-              <p className="mt-1 text-sm text-slate-400">Backend services are prepared for resource, booking and analytics modules.</p>
-            </div>
-            <BarChart3 className="text-cyan-300" />
-          </div>
-          <div className="h-64 rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-400/10 via-slate-900 to-violet-500/10 p-5">
-            <div className="flex h-full items-end gap-3">
-              {[52, 72, 44, 88, 66, 92, 74, 58, 84].map((height, idx) => (
-                <div key={idx} className="flex flex-1 items-end">
-                  <div className="w-full rounded-t-2xl bg-gradient-to-t from-cyan-500 to-violet-400 opacity-80 transition hover:opacity-100" style={{ height: `${height}%` }} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="text-xl font-black text-white">Launch Checklist</h2>
-          <div className="mt-6 space-y-4">
-            {phases.map((phase) => (
-              <div key={phase} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-                <div className="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.8)]" />
-                <span className="text-sm font-semibold text-slate-200">{phase}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
     </div>
-  );
+  )
 }

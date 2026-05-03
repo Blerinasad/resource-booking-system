@@ -1,16 +1,28 @@
-import axios from "axios";
-import { API_BASE_URL } from "../config/api";
+import axios from 'axios'
 
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+// Vite proxy: /api/* → localhost:5000/api/*
+// API Gateway mounts all routes under /api
+const client = axios.create({
+  baseURL: '/api',
   withCredentials: true,
-  timeout: 15000,
-});
+  timeout: 10000,
+})
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
 
-export default apiClient;
+client.interceptors.response.use(
+  (res) => res.data,
+  async (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('accessToken')
+      window.location.href = '/login'
+    }
+    return Promise.reject(err)
+  }
+)
+
+export default client
