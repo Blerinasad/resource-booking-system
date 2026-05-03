@@ -1,36 +1,33 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import * as authService from "../services/authService";
 
 export const AuthContext = createContext(null);
+
+const normalizeUser = (result) => result?.data?.user || result?.data || result?.user || null;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const isAuthenticated = Boolean(user);
-  const isAdmin = user?.role === "admin";
-
   const loginUser = async (email, password) => {
     const result = await authService.login({ email, password });
+    const token = result?.data?.accessToken || result?.accessToken;
+    const loggedUser = normalizeUser(result);
 
-    const token = result.data.accessToken;
-    const loggedUser = result.data.user;
+    if (!token) throw new Error("Access token missing from response.");
 
     localStorage.setItem("accessToken", token);
     setUser(loggedUser);
-
     return loggedUser;
   };
 
   const registerUser = async (payload) => {
     const result = await authService.register(payload);
+    const token = result?.data?.accessToken || result?.accessToken;
+    const registeredUser = normalizeUser(result);
 
-    const token = result.data.accessToken;
-    const registeredUser = result.data.user;
-
-    localStorage.setItem("accessToken", token);
+    if (token) localStorage.setItem("accessToken", token);
     setUser(registeredUser);
-
     return registeredUser;
   };
 
@@ -38,9 +35,8 @@ export function AuthProvider({ children }) {
     try {
       await authService.logout();
     } catch {
-      // ignore logout API errors
+      // logout should still clear local state
     }
-
     localStorage.removeItem("accessToken");
     setUser(null);
   };
@@ -48,15 +44,13 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem("accessToken");
-
       if (!token) {
         setLoading(false);
         return;
       }
-
       try {
         const result = await authService.getMe();
-        setUser(result.data.user || result.data);
+        setUser(normalizeUser(result));
       } catch {
         localStorage.removeItem("accessToken");
         setUser(null);
@@ -64,23 +58,21 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
     };
-
     loadUser();
   }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        isAuthenticated,
-        isAdmin,
-        loginUser,
-        registerUser,
-        logoutUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      isAuthenticated: Boolean(user),
+      isAdmin: user?.role === "admin",
+      loginUser,
+      registerUser,
+      logoutUser,
+    }),
+    [user, loading]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
