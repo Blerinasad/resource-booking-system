@@ -3,17 +3,26 @@ import * as authService from '../services/authService.js'
 
 const AuthContext = createContext(null)
 
+const normalizeUser = (res) => {
+  if (!res) return null
+  return res.user || res.data?.user || res.data || res
+}
+
+const normalizeToken = (res) => {
+  return res?.accessToken || res?.data?.accessToken || null
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const normalize = (res) => res?.data?.user || res?.data || res?.user || null
-
   const loginUser = async (email, password) => {
     const res   = await authService.login({ email, password })
-    const token = res?.data?.accessToken || res?.accessToken
-    const u     = normalize(res)
+    const token = normalizeToken(res)
+    const u     = normalizeUser(res)
+
     if (!token) throw new Error('Access token missing')
+
     localStorage.setItem('accessToken', token)
     setUser(u)
     return u
@@ -21,8 +30,9 @@ export function AuthProvider({ children }) {
 
   const registerUser = async (payload) => {
     const res   = await authService.register(payload)
-    const token = res?.data?.accessToken || res?.accessToken
-    const u     = normalize(res)
+    const token = normalizeToken(res)
+    const u     = normalizeUser(res)
+
     if (token) localStorage.setItem('accessToken', token)
     setUser(u)
     return u
@@ -38,9 +48,10 @@ export function AuthProvider({ children }) {
     const init = async () => {
       const token = localStorage.getItem('accessToken')
       if (!token) { setLoading(false); return }
+
       try {
         const res = await authService.getMe()
-        setUser(normalize(res))
+        setUser(normalizeUser(res))
       } catch {
         localStorage.removeItem('accessToken')
         setUser(null)
@@ -48,6 +59,7 @@ export function AuthProvider({ children }) {
         setLoading(false)
       }
     }
+
     init()
   }, [])
 
