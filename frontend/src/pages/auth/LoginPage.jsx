@@ -1,58 +1,87 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Lock, Mail } from "lucide-react";
-import useAuth from "../../hooks/useAuth";
-import AuthLayout from "../../layouts/AuthLayout";
-import Input from "../../components/common/Input";
-import Button from "../../components/common/Button";
-import Badge from "../../components/common/Badge";
-import { DEFAULT_LOGIN } from "../../config/constants";
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext.jsx'
+import AuthLayout from '../../components/layout/AuthLayout.jsx'
+import Input  from '../../components/common/Input.jsx'
+import Button from '../../components/common/Button.jsx'
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const { loginUser } = useAuth();
-  const [form, setForm] = useState(DEFAULT_LOGIN);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { loginUser } = useAuth()
+  const navigate      = useNavigate()
+  const [form, setForm] = useState({ email: 'admin@test.com', password: '123456' })
+  const [error, setError]     = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const onChange = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }))
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const onSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
     try {
-      await loginUser(form.email, form.password);
-      navigate("/dashboard");
+      await loginUser(form.email, form.password)
+      navigate('/dashboard')
     } catch (err) {
-      setError(err?.response?.data?.message || "Invalid email or password.");
+      setError(err?.response?.data?.message || 'Invalid email or password.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Login to manage resources and analytics.">
-      <div className="mb-6 flex justify-center">
-        <Badge tone="cyan">Demo: admin@test.com / 123456</Badge>
+    <AuthLayout title="Welcome back" subtitle="Sign in to your account to continue.">
+      {/* Demo hint */}
+      <div className="mb-6 p-3 rounded-xl bg-brand-500/5 border border-brand-500/15">
+        <p className="text-xs text-slate-400 font-mono">
+          <span className="text-brand-400">Demo:</span> admin@test.com / 123456
+        </p>
       </div>
-      {error && <div className="mb-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-3 text-sm text-red-200">{error}</div>}
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="relative">
-          <Mail className="pointer-events-none absolute left-4 top-[42px] text-slate-500" size={18} />
-          <Input label="Email" name="email" type="email" value={form.email} onChange={handleChange} className="pl-11" placeholder="admin@test.com" />
+
+      {error && (
+        <div className="mb-5 p-3 rounded-xl bg-red-500/5 border border-red-500/20 text-sm text-red-400">
+          {error}
         </div>
-        <div className="relative">
-          <Lock className="pointer-events-none absolute left-4 top-[42px] text-slate-500" size={18} />
-          <Input label="Password" name="password" type="password" value={form.password} onChange={handleChange} className="pl-11" placeholder="••••••" />
-        </div>
-        <Button disabled={loading} className="flex w-full items-center justify-center gap-2">
-          {loading ? "Signing in..." : "Login"} <ArrowRight size={18} />
+      )}
+
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <Input
+          label="Email address"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={onChange}
+          placeholder="you@example.com"
+          icon={Mail}
+          required
+        />
+        <Input
+          label="Password"
+          name="password"
+          type="password"
+          value={form.password}
+          onChange={onChange}
+          placeholder="••••••••"
+          icon={Lock}
+          required
+        />
+
+        <Button
+          type="submit"
+          loading={loading}
+          className="w-full mt-2"
+          iconRight={ArrowRight}
+        >
+          Sign in
         </Button>
       </form>
-      <p className="mt-7 text-center text-sm text-slate-400">
-        No account yet? <Link className="font-semibold text-cyan-300 hover:text-cyan-200" to="/register">Create one</Link>
+
+      <p className="mt-6 text-center text-sm text-slate-500">
+        Don't have an account?{' '}
+        <Link to="/register" className="text-brand-400 hover:text-brand-300 font-semibold transition-colors">
+          Create one
+        </Link>
       </p>
     </AuthLayout>
-  );
+  )
 }

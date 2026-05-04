@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: smart_booking_mysql
+    container_name: spdd_mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -18,16 +18,21 @@ services:
 
   mongodb:
     image: mongo:7
-    container_name: smart_booking_mongodb
+    container_name: spdd_mongodb
     restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
-    container_name: smart_booking_zookeeper
+    container_name: spdd_zookeeper
     restart: always
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -37,12 +42,13 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1
-    container_name: smart_booking_kafka
+    container_name: spdd_kafka
     restart: always
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -50,11 +56,17 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 20s
+      timeout: 15s
+      retries: 20
+      start_period: 60s
 
   auth-service:
     build:
       context: ./services/auth-service
-    container_name: auth-service
+    container_name: spdd_auth
     restart: always
     ports:
       - "5001:5001"
@@ -67,7 +79,7 @@ services:
   resource-service:
     build:
       context: ./services/resource-service
-    container_name: resource-service
+    container_name: spdd_resource
     restart: always
     ports:
       - "5002:5002"
@@ -82,7 +94,7 @@ services:
   booking-analytics-service:
     build:
       context: ./services/booking-analytics-service
-    container_name: booking-analytics-service
+    container_name: spdd_booking
     restart: always
     ports:
       - "5003:5003"
@@ -99,7 +111,7 @@ services:
   api-gateway:
     build:
       context: ./api-gateway
-    container_name: api-gateway
+    container_name: spdd_gateway
     restart: always
     ports:
       - "5000:5000"

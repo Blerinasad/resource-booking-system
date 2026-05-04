@@ -1,52 +1,86 @@
-import { Link } from "react-router-dom";
-import { BarChart3, CalendarCheck, Database, LayoutDashboard, Sparkles, Users } from "lucide-react";
+import { NavLink, useNavigate } from 'react-router-dom'
+import {
+  LayoutDashboard, CalendarCheck, Database,
+  BarChart3, Users, LogOut, Zap, Settings
+} from 'lucide-react'
+import { useAuth } from '../../context/AuthContext.jsx'
 
-const items = [
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, active: true },
-  { label: "Resources", to: "/dashboard", icon: Database },
-  { label: "Bookings", to: "/dashboard", icon: CalendarCheck },
-  { label: "Analytics", to: "/dashboard", icon: BarChart3 },
-  { label: "Users", to: "/dashboard", icon: Users },
-];
+const navItems = [
+  { label: 'Dashboard',  to: '/dashboard',            icon: LayoutDashboard },
+  { label: 'Bookings',   to: '/dashboard/bookings',   icon: CalendarCheck },
+  { label: 'Resources',  to: '/dashboard/resources',  icon: Database },
+  { label: 'Analytics',  to: '/dashboard/analytics',  icon: BarChart3 },
+  { label: 'Users',      to: '/dashboard/users',      icon: Users },
+]
 
 export default function Sidebar() {
+  const { user, logoutUser, isAdmin } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logoutUser()
+    navigate('/login')
+  }
+
   return (
-    <aside className="hidden min-h-screen w-72 border-r border-white/10 bg-slate-950/70 p-5 backdrop-blur-2xl lg:block">
-      <div className="mb-10 flex items-center gap-3">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-500 shadow-glow">
-          <Sparkles className="text-white" size={22} />
+    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-surface-900 border-r border-white/[0.05] p-5 sticky top-0 animate-slide-left">
+      {/* Logo */}
+      <div className="flex items-center gap-3 mb-8 px-1">
+        <div className="relative">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-emerald-500 flex items-center justify-center shadow-glow-sm animate-pulse-glow">
+            <Zap size={18} className="text-white" />
+          </div>
         </div>
         <div>
-          <h1 className="text-lg font-black tracking-tight">Smart Booking</h1>
-          <p className="text-xs text-slate-400">Resource analytics</p>
+          <h1 className="font-display font-bold text-white text-sm leading-none">Smart Booking</h1>
+          <p className="text-[10px] text-slate-500 mt-0.5 font-mono uppercase tracking-wider">Resource Manager</p>
         </div>
       </div>
-      <nav className="space-y-2">
-        {items.map((item) => {
-          const Icon = item.icon;
+
+      {/* Nav */}
+      <nav className="flex-1 flex flex-col gap-1">
+        <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest px-3 mb-2">Navigation</p>
+        {navItems.map((item) => {
+          const Icon = item.icon
+          if (item.label === 'Users' && !isAdmin) return null
           return (
-            <Link
-              key={item.label}
+            <NavLink
+              key={item.to}
               to={item.to}
-              className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 ${
-                item.active
-                  ? "border border-cyan-300/20 bg-cyan-400/10 text-cyan-200 shadow-glow"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white"
-              }`}
+              end={item.to === '/dashboard'}
+              className={({ isActive }) =>
+                `sidebar-item ${isActive ? 'sidebar-item-active' : ''}`
+              }
             >
-              <Icon size={19} />
-              {item.label}
-            </Link>
-          );
+              <Icon size={17} className="shrink-0" />
+              <span>{item.label}</span>
+            </NavLink>
+          )
         })}
       </nav>
-      <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-        <p className="text-sm font-bold text-white">Backend status</p>
-        <p className="mt-2 text-xs text-slate-400">Connected through API Gateway on port 5000.</p>
-        <div className="mt-4 h-2 rounded-full bg-slate-800">
-          <div className="h-2 w-4/5 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400" />
+
+      {/* User card */}
+      <div className="mt-4 pt-4 border-t border-white/[0.05]">
+        <div className="glass rounded-xl p-3 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs">
+              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-white truncate">{user?.name || 'User'}</p>
+              <p className="text-xs text-slate-500 truncate font-mono">{user?.role || 'user'}</p>
+            </div>
+          </div>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="sidebar-item w-full text-red-400 hover:text-red-300 hover:bg-red-500/5"
+        >
+          <LogOut size={16} />
+          <span>Sign out</span>
+        </button>
       </div>
     </aside>
-  );
+  )
 }

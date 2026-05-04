@@ -8,11 +8,7 @@ import errorMiddleware from "./middleware/errorMiddleware.js";
 
 const app = express();
 
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000", "http://localhost:80"],
-  credentials: true,
-}));
-
+app.use(cors());
 app.use(morgan("dev"));
 app.use(rateLimitMiddleware);
 

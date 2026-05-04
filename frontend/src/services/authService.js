@@ -1,21 +1,7 @@
-import apiClient from "./apiClient";
+import client from './apiClient.js'
 
-export const login = async (payload) => {
-  const response = await apiClient.post("/auth/login", payload);
-  return response.data;
-};
-
-export const register = async (payload) => {
-  const response = await apiClient.post("/auth/register", payload);
-  return response.data;
-};
-
-export const getMe = async () => {
-  const response = await apiClient.get("/users/me");
-  return response.data;
-};
-
-export const logout = async () => {
-  const response = await apiClient.post("/auth/logout");
-  return response.data;
-};
+export const login    = (data) => client.post('/auth/login', data)
+export const register = (data) => client.post('/auth/register', data)
+export const logout   = ()     => client.post('/auth/logout')
+export const getMe    = ()     => client.get('/auth/me')
+export const refresh  = ()     => client.post('/auth/refresh')
