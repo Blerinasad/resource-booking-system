@@ -66,8 +66,9 @@ services:
   auth-service:
     build:
       context: ./services/auth-service
+      dockerfile: Dockerfile
     container_name: spdd_auth
-    restart: always
+    restart: on-failure
     ports:
       - "5001:5001"
     env_file:
@@ -79,8 +80,9 @@ services:
   resource-service:
     build:
       context: ./services/resource-service
+      dockerfile: Dockerfile
     container_name: spdd_resource
-    restart: always
+    restart: on-failure
     ports:
       - "5002:5002"
     env_file:
@@ -94,8 +96,9 @@ services:
   booking-analytics-service:
     build:
       context: ./services/booking-analytics-service
+      dockerfile: Dockerfile
     container_name: spdd_booking
-    restart: always
+    restart: on-failure
     ports:
       - "5003:5003"
     env_file:
@@ -111,8 +114,9 @@ services:
   api-gateway:
     build:
       context: ./api-gateway
+      dockerfile: Dockerfile
     container_name: spdd_gateway
-    restart: always
+    restart: on-failure
     ports:
       - "5000:5000"
     env_file:

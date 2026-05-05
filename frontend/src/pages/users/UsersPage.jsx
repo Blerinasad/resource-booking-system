@@ -5,13 +5,20 @@ import Input  from '../../components/common/Input.jsx'
 import Button from '../../components/common/Button.jsx'
 import Loader from '../../components/common/Loader.jsx'
 import { userService } from '../../services/index.js'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { Navigate } from 'react-router-dom'
 
 const fmt = (dt) => dt ? new Date(dt).toLocaleDateString('en-GB', { dateStyle: 'medium' }) : '—'
 
 export default function UsersPage() {
-  const [users, setUsers]   = useState([])
+  const { isAdmin } = useAuth()
+
+  // Non-admins should not access this page
+  if (!isAdmin) return <Navigate to="/unauthorized" replace />
+
+  const [users, setUsers]     = useState([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [search, setSearch]   = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -40,7 +47,7 @@ export default function UsersPage() {
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex-1 min-w-56">
           <Input
-            placeholder="Search users..."
+            placeholder="Search users…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             icon={Search}
@@ -49,10 +56,8 @@ export default function UsersPage() {
         <Button variant="ghost" icon={RefreshCw} onClick={load} className="text-xs">Refresh</Button>
       </div>
 
-      {/* Count */}
       <p className="text-xs font-mono text-slate-500">{filtered.length} user{filtered.length !== 1 ? 's' : ''}</p>
 
-      {/* Table */}
       {loading ? <Loader /> : (
         <div className="card">
           {filtered.length === 0 ? (

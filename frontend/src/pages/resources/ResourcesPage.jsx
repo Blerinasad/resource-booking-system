@@ -17,6 +17,7 @@ const TYPE_OPTS = [
   { value: 'equipment', label: '🖥 Equipment' },
   { value: 'workspace', label: '💺 Workspace' },
 ]
+
 const STATUS_OPTS = [
   { value: '',             label: 'All statuses' },
   { value: 'available',    label: 'Available' },
@@ -33,38 +34,62 @@ export default function ResourcesPage() {
   const [typeFilter, setType]     = useState('')
   const [statusFilter, setStatus] = useState('')
 
-  const [showForm, setShowForm]         = useState(false)
-  const [editRes, setEditRes]           = useState(null)
-  const [deleteRes, setDeleteRes]       = useState(null)
-  const [bookRes, setBookRes]           = useState(null)
-  const [deleting, setDeleting]         = useState(false)
+  const [showForm, setShowForm]   = useState(false)
+  const [editRes, setEditRes]     = useState(null)
+  const [deleteRes, setDeleteRes] = useState(null)
+  const [bookRes, setBookRes]     = useState(null)
+  const [deleting, setDeleting]   = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
+
     try {
       const params = { limit: 100 }
-      if (typeFilter)   params.type   = typeFilter
+
+      if (typeFilter) params.type = typeFilter
       if (statusFilter) params.status = statusFilter
-      const res  = await resourceService.getAll(params)
-      const list = res?.data?.resources || res?.data || res || []
+
+      const res = await resourceService.getAll(params)
+
+      const list =
+        res?.resources ||
+        res?.data?.resources ||
+        res?.data?.data?.resources ||
+        res?.data ||
+        res ||
+        []
+
       setResources(Array.isArray(list) ? list : [])
-    } catch {
+    } catch (err) {
+      console.error('Failed to load resources:', err)
       setResources([])
     } finally {
       setLoading(false)
     }
   }, [typeFilter, statusFilter])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const filtered = resources.filter(r =>
-    !search || r.name?.toLowerCase().includes(search.toLowerCase()) || r.location?.toLowerCase().includes(search.toLowerCase())
+    !search ||
+    r.name?.toLowerCase().includes(search.toLowerCase()) ||
+    r.location?.toLowerCase().includes(search.toLowerCase())
   )
 
   const doDelete = async () => {
     setDeleting(true)
-    try { await resourceService.delete(deleteRes.id); load() } catch {}
-    setDeleting(false); setDeleteRes(null)
+
+    try {
+      await resourceService.delete(deleteRes.id)
+      load()
+    } catch (err) {
+      console.error('Failed to delete resource:', err)
+    }
+
+    setDeleting(false)
+    setDeleteRes(null)
   }
 
   return (
@@ -79,6 +104,7 @@ export default function ResourcesPage() {
             icon={Search}
           />
         </div>
+
         <div className="w-44">
           <Select
             value={typeFilter}
@@ -86,6 +112,7 @@ export default function ResourcesPage() {
             options={TYPE_OPTS}
           />
         </div>
+
         <div className="w-44">
           <Select
             value={statusFilter}
@@ -93,9 +120,24 @@ export default function ResourcesPage() {
             options={STATUS_OPTS}
           />
         </div>
-        <Button variant="ghost" icon={RefreshCw} onClick={load} className="text-xs">Refresh</Button>
+
+        <Button
+          variant="ghost"
+          icon={RefreshCw}
+          onClick={load}
+          className="text-xs"
+        >
+          Refresh
+        </Button>
+
         {isAdmin && (
-          <Button icon={Plus} onClick={() => { setEditRes(null); setShowForm(true) }}>
+          <Button
+            icon={Plus}
+            onClick={() => {
+              setEditRes(null)
+              setShowForm(true)
+            }}
+          >
             New Resource
           </Button>
         )}
@@ -110,14 +152,19 @@ export default function ResourcesPage() {
       {loading ? (
         <Loader />
       ) : filtered.length === 0 ? (
-        <div className="card py-16 text-center text-slate-500 text-sm">No resources found.</div>
+        <div className="card py-16 text-center text-slate-500 text-sm">
+          No resources found.
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map(r => (
             <ResourceCard
               key={r.id}
               resource={r}
-              onEdit={isAdmin ? (res) => { setEditRes(res); setShowForm(true) } : null}
+              onEdit={isAdmin ? (res) => {
+                setEditRes(res)
+                setShowForm(true)
+              } : null}
               onDelete={isAdmin ? (res) => setDeleteRes(res) : null}
               onBook={(res) => setBookRes(res)}
             />
@@ -127,7 +174,10 @@ export default function ResourcesPage() {
 
       <ResourceForm
         open={showForm}
-        onClose={() => { setShowForm(false); setEditRes(null) }}
+        onClose={() => {
+          setShowForm(false)
+          setEditRes(null)
+        }}
         onSuccess={load}
         resource={editRes}
       />

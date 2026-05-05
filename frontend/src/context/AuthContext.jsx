@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import * as authService from '../services/authService.js'
 
-const AuthContext = createContext(null)
+export const AuthContext = createContext(null)
 
 const normalizeUser = (res) => {
   if (!res) return null
@@ -28,14 +28,11 @@ export function AuthProvider({ children }) {
     return u
   }
 
+  // Register: does NOT log the user in — redirects to /login
   const registerUser = async (payload) => {
-    const res   = await authService.register(payload)
-    const token = normalizeToken(res)
-    const u     = normalizeUser(res)
-
-    if (token) localStorage.setItem('accessToken', token)
-    setUser(u)
-    return u
+    const res = await authService.register(payload)
+    // Do NOT set user or store token here — user must login manually
+    return res
   }
 
   const logoutUser = async () => {

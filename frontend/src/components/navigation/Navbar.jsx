@@ -1,8 +1,15 @@
-import { Bell, Search } from 'lucide-react'
+import { Bell, Search, LogOut } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { useNavigate } from 'react-router-dom'
 
 export default function Navbar({ title, subtitle }) {
-  const { user } = useAuth()
+  const { user, logoutUser } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logoutUser()
+    navigate('/login')
+  }
 
   return (
     <header className="h-16 border-b border-white/[0.05] flex items-center justify-between px-6 bg-surface-950/80 backdrop-blur-md sticky top-0 z-30">
@@ -19,9 +26,25 @@ export default function Navbar({ title, subtitle }) {
           <Bell size={18} />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-brand-400 rounded-full" />
         </button>
-        <div className="ml-1 w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs cursor-pointer">
-          {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+
+        {/* Avatar + role badge */}
+        <div className="ml-1 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs cursor-default select-none">
+            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-xs font-semibold text-white leading-none">{user?.name}</p>
+            <p className="text-[10px] text-slate-500 font-mono mt-0.5">{user?.role}</p>
+          </div>
         </div>
+
+        <button
+          onClick={handleLogout}
+          title="Sign out"
+          className="ml-1 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/5 transition-all"
+        >
+          <LogOut size={16} />
+        </button>
       </div>
     </header>
   )

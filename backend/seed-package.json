@@ -1,0 +1,15 @@
+{
+  "name": "smart-booking-seed",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Database seed script for Smart Booking System",
+  "scripts": {
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.8.0",
+    "mysql2": "^3.10.1"
+  }
+}

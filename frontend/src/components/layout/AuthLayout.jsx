@@ -38,14 +38,7 @@ export default function AuthLayout({ children, title, subtitle }) {
           </div>
         </div>
 
-        {/* Feature pills */}
-        <div className="relative flex flex-wrap gap-2">
-          {['Microservices', 'Kafka Events', 'JWT Auth', 'Analytics', 'Docker'].map((f) => (
-            <span key={f} className="badge bg-white/[0.04] border border-white/10 text-slate-400 font-mono">
-              {f}
-            </span>
-          ))}
-        </div>
+       
       </div>
 
       {/* Right panel — form */}
