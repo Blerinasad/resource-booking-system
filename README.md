@@ -1,63 +1,115 @@
 # Smart Resource Booking System
 
-## 📁 Struktura
-```
-project-final/
-├── backend/          ← Mikroshërbimet + Docker
-│   ├── docker-compose.yml
-│   ├── api-gateway/
-│   ├── services/
-│   │   ├── auth-service/
-│   │   ├── resource-service/
-│   │   └── booking-analytics-service/
-│   └── infrastructure/
-└── frontend/         ← React + Vite
-```
+## 📌 Overview
+Smart Resource Booking System është një platformë për menaxhimin e rezervimeve të resurseve si salla, pajisje dhe hapësira pune. Sistemi është ndërtuar me arkitekturë mikroshërbimesh dhe ofron rezervime në kohë reale, autentikim të sigurt dhe menaxhim të përdoruesve.
 
-## 🚀 Si të startosh
+---
 
-### 1. Backend (Docker)
-```bash
-cd backend
-docker compose down
-docker compose build --no-cache
-docker compose up -d
-```
+## 🏗️ Architecture
+Sistemi përbëhet nga:
 
-Prit ~30 sekonda, pastaj kontrollo:
-```bash
-docker compose ps
-```
-Të gjitha duhet të jenë **Up**.
+- API Gateway
+- Auth Service
+- Resource Service
+- Booking Service
+- Frontend (React)
 
-### 2. Frontend (Vite)
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Komunikimi realizohet përmes HTTP API (Gateway).
 
-Hap browser: **http://localhost:5173**
+---
 
-### 3. Demo login
-- Email: `admin@test.com`
-- Password: `123456`
+## ⚙️ Technologies
 
-## 🔌 Ports
-| Shërbimi | Port |
-|----------|------|
-| Frontend (Vite) | 5173 |
-| API Gateway | 5000 |
-| Auth Service | 5001 |
-| Resource Service | 5002 |
-| Booking Analytics | 5003 |
-| MySQL | 3307 |
-| MongoDB | 27017 |
-| Kafka | 9092 |
+### Backend
+- Node.js + Express
+- MongoDB
+- JWT Authentication
+- Docker & Docker Compose
 
-## ⚙️ Si funksionon routing
-```
-Browser → localhost:5173/api/*
-       → Vite Proxy → localhost:5000/api/*
-       → API Gateway → microservice
-```
+### Frontend
+- React (Vite)
+- TailwindCSS
+- Axios
+
+### DevOps
+- Docker
+- Jenkins (CI/CD)
+
+---
+
+## 📂 Project Structure
+
+resource-booking-system/ │ ├── backend/ │   ├── api-gateway/ │   ├── services/ │   │   ├── auth-service/ │   │   ├── resource-service/ │   │   └── booking-service/ │   └── README.md │ ├── frontend/ │   └── README.md │ └── README.md
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone project
+bash git clone https://github.com/your-username/resource-booking-system.git cd resource-booking-system 
+
+---
+
+### 2. Run backend (Docker)
+bash docker compose up -d --build 
+
+Backend services:
+- API Gateway → http://localhost:5000
+- Auth Service → 5001
+- Resource Service → 5002
+- Booking Service → 5003
+
+---
+
+### 3. Run frontend
+bash cd frontend npm install npm run dev 
+
+Frontend:
+- http://localhost:5173
+
+---
+
+## 🔐 Authentication
+- JWT-based authentication
+- Roles:
+  - Admin
+  - User
+
+---
+
+## 📌 Features
+- User registration & login
+- Resource management (CRUD)
+- Booking system
+- Role-based access control
+- Dashboard UI
+
+---
+
+## 🧪 Testing
+Testimi mund të realizohet me:
+bash npm test npm run test:coverage 
+
+---
+
+## ⚡ CI/CD
+- Jenkins Pipeline
+- Docker build & deploy
+
+---
+
+## 📖 Documentation
+- Backend → backend/README.md
+- Frontend → frontend/README.md
+
+---
+
+## 👨‍💻 Authors
+- Getuar Jakupi
+- Era Mustafa
+- Blerina Sadiku
+
+---
+
+## 📄 License
+Projekt akademik – vetëm për përdorim edukat
