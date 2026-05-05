@@ -32,7 +32,7 @@ export default function BookingForm({ open, onClose, onSuccess, preselectedResou
     setLoadingRes(true)
     resourceService.getAll({ limit: 100, status: 'available' })
       .then((res) => {
-        const list = res?.data?.resources || res?.data || res || []
+        const list = res?.resources || res?.data?.resources || res?.data || res || []
         setResources(Array.isArray(list) ? list : [])
       })
       .catch(() => setResources([]))
@@ -64,7 +64,7 @@ export default function BookingForm({ open, onClose, onSuccess, preselectedResou
         resourceId: Number(form.resourceId),
         startTime:  new Date(form.startTime).toISOString(),
         endTime:    new Date(form.endTime).toISOString(),
-        notes:      form.notes,
+        purpose:    form.notes,
       })
       onSuccess?.()
       onClose()

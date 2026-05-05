@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { ChevronDown } from 'lucide-react'
 
 export function Select({ label, error, options = [], className = '', ...props }) {
@@ -53,7 +54,8 @@ export function EmptyState({ icon: Icon, title, description, action }) {
 
 export function ConfirmDialog({ open, onClose, onConfirm, title, message, confirmLabel = 'Confirm', variant = 'danger', loading = false }) {
   if (!open) return null
-  return (
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-sm bg-surface-800 border border-white/10 rounded-2xl shadow-2xl animate-fade-in p-6">
@@ -74,7 +76,8 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, message, confir
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

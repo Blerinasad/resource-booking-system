@@ -44,12 +44,7 @@ export default function LoginPage() {
         </div>
       )}
 
-      {/* Demo hint */}
-      <div className="mb-6 p-3 rounded-xl bg-brand-500/5 border border-brand-500/15">
-        <p className="text-xs text-slate-400 font-mono">
-          <span className="text-brand-400">Demo:</span> admin@test.com / 123456
-        </p>
-      </div>
+    
 
       {error && (
         <div className="mb-5 p-3 rounded-xl bg-red-500/5 border border-red-500/20 text-sm text-red-400">
@@ -62,7 +57,6 @@ export default function LoginPage() {
           label="Email address"
           name="email"
           type="email"
-          value={form.email}
           onChange={onChange}
           placeholder="you@example.com"
           icon={Mail}
@@ -72,7 +66,6 @@ export default function LoginPage() {
           label="Password"
           name="password"
           type="password"
-          value={form.password}
           onChange={onChange}
           placeholder="••••••••"
           icon={Lock}

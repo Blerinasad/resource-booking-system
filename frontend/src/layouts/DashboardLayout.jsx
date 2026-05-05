@@ -22,11 +22,11 @@ export default function DashboardLayout() {
   const meta = PAGE_META[location.pathname] || { title: 'Dashboard', subtitle: '' };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+    <div className="h-screen overflow-hidden bg-slate-950 text-slate-100">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(34,211,238,0.08),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(139,92,246,0.09),transparent_24%)]" />
-      <div className="relative flex">
+      <div className="relative flex h-full">
         <Sidebar />
-        <main className="min-h-screen flex-1">
+        <main className="flex-1 h-full overflow-y-auto">
           <Navbar title={meta.title} subtitle={meta.subtitle} user={user} />
           <div className="p-5 md:p-8">
             <Outlet />

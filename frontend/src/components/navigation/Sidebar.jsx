@@ -28,9 +28,9 @@ export default function Sidebar() {
   })
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-surface-900 border-r border-white/[0.05] p-5 sticky top-0 animate-slide-left">
+    <aside className="hidden lg:flex flex-col w-64 h-screen bg-surface-900 border-r border-white/[0.05] p-5 sticky top-0 animate-slide-left overflow-hidden">
       {/* Logo */}
-      <div className="flex items-center gap-3 mb-8 px-1">
+      <div className="flex items-center gap-3 mb-8 px-1 shrink-0">
         <div className="relative">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-emerald-500 flex items-center justify-center shadow-glow-sm animate-pulse-glow">
             <Zap size={18} className="text-white" />
@@ -48,8 +48,8 @@ export default function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 flex flex-col gap-1">
-        <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest px-3 mb-2">
+      <nav className="flex-1 flex flex-col gap-1 overflow-y-auto min-h-0">
+        <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest px-3 mb-2 shrink-0">
           Navigation
         </p>
 
@@ -72,8 +72,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User card */}
-      <div className="mt-4 pt-4 border-t border-white/[0.05]">
+      {/* User card — always pinned to bottom */}
+      <div className="shrink-0 mt-4 pt-4 border-t border-white/[0.05]">
         <div className="glass rounded-xl p-3 mb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs">

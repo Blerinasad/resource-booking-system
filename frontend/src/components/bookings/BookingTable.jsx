@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx'
 
 const fmt = (dt) => dt ? new Date(dt).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }) : '—'
 
-export default function BookingTable({ bookings = [], onCancel, onApprove, onReject, onView, loading }) {
+export default function BookingTable({ bookings = [], onCancel, onApprove, onReject, onView, loading, resourceMap = {} }) {
   const { isAdmin } = useAuth()
 
   if (loading) {
@@ -41,8 +41,12 @@ export default function BookingTable({ bookings = [], onCancel, onApprove, onRej
           {bookings.map((b) => (
             <tr key={b.id} className="hover:bg-white/[0.02] transition-colors group">
               <td className="py-3 pr-4 font-mono text-xs text-slate-600">#{b.id}</td>
-              <td className="py-3 pr-4 font-semibold text-slate-200">{b.resourceId}</td>
-              <td className="py-3 pr-4 text-slate-400 font-mono text-xs">{b.userId}</td>
+              <td className="py-3 pr-4 font-semibold text-slate-200">
+                {resourceMap[b.resourceId] || `Resource #${b.resourceId}`}
+              </td>
+              <td className="py-3 pr-4 text-slate-400 font-mono text-xs">
+                {b.userName || b.userEmail || `User #${b.userId}`}
+              </td>
               <td className="py-3 pr-4 font-mono text-xs text-slate-400">{fmt(b.startTime)}</td>
               <td className="py-3 pr-4 font-mono text-xs text-slate-400">{fmt(b.endTime)}</td>
               <td className="py-3 pr-4"><StatusBadge status={b.status} /></td>

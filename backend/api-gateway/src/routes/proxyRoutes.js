@@ -7,6 +7,13 @@ import roleMiddleware from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
+const forwardUserHeaders = (proxyReq, req) => {
+  if (req.user) {
+    proxyReq.setHeader("x-user-id", req.user.id);
+    proxyReq.setHeader("x-user-role", req.user.role);
+  }
+};
+
 router.use(
   "/auth",
   createProxyMiddleware({
@@ -23,6 +30,7 @@ router.use(
     target: services.auth,
     changeOrigin: true,
     pathRewrite: (path) => `/users${path}`,
+    on: { proxyReq: forwardUserHeaders },
   }),
 );
 
@@ -33,6 +41,7 @@ router.use(
     target: services.resource,
     changeOrigin: true,
     pathRewrite: (path) => `/resources${path}`,
+    on: { proxyReq: forwardUserHeaders },
   }),
 );
 
@@ -44,6 +53,7 @@ router.use(
     target: services.booking,
     changeOrigin: true,
     pathRewrite: (path) => `/bookings/admin${path}`,
+    on: { proxyReq: forwardUserHeaders },
   }),
 );
 
@@ -54,6 +64,7 @@ router.use(
     target: services.booking,
     changeOrigin: true,
     pathRewrite: (path) => `/bookings${path}`,
+    on: { proxyReq: forwardUserHeaders },
   }),
 );
 
@@ -65,6 +76,7 @@ router.use(
     target: services.booking,
     changeOrigin: true,
     pathRewrite: (path) => `/analytics${path}`,
+    on: { proxyReq: forwardUserHeaders },
   }),
 );
 

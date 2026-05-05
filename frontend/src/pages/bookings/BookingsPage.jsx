@@ -7,7 +7,7 @@ import { ConfirmDialog, Pagination } from '../../components/common/FormElements.
 import Button from '../../components/common/Button.jsx'
 import Modal from '../../components/common/Modal.jsx'
 import { StatusBadge } from '../../components/common/Badge.jsx'
-import { bookingService } from '../../services/index.js'
+import { bookingService, resourceService } from '../../services/index.js'
 
 const STATUSES = ['all', 'pending', 'approved', 'cancelled', 'completed', 'no-show']
 
@@ -22,6 +22,7 @@ export default function BookingsPage() {
   const [page, setPage]               = useState(1)
   const [totalPages, setTotalPages]   = useState(1)
   const [statusFilter, setStatus]     = useState('all')
+  const [resourceMap, setResourceMap] = useState({})
 
   const [showForm, setShowForm]             = useState(false)
   const [viewBooking, setViewBooking]       = useState(null)
@@ -29,6 +30,18 @@ export default function BookingsPage() {
   const [confirmApprove, setConfirmApprove] = useState(null)
   const [confirmReject, setConfirmReject]   = useState(null)
   const [actionLoading, setActionLoading]   = useState(false)
+
+  // Fetch all resources once to build a name lookup map
+  useEffect(() => {
+    resourceService.getAll({ limit: 200 })
+      .then(res => {
+        const list = res?.resources ?? res?.data?.resources ?? []
+        const map = {}
+        list.forEach(r => { map[r.id] = r.name })
+        setResourceMap(map)
+      })
+      .catch(() => {})
+  }, [])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -44,41 +57,10 @@ export default function BookingsPage() {
         ? await bookingService.adminAll(params)
         : await bookingService.getAll(params)
 
-      const data =
-        res?.data?.data ||
-        res?.data ||
-        res ||
-        {}
-
-      const list =
-        data?.bookings ||
-        data?.rows ||
-        data?.items ||
-        data?.results ||
-        data ||
-        []
-
+      // bookingService returns { bookings, pagination } directly
+      const list = res?.bookings ?? []
       setBookings(Array.isArray(list) ? list : [])
-
-      const total =
-        data?.total ||
-        data?.count ||
-        data?.pagination?.total ||
-        list.length ||
-        0
-
-      const limit =
-        data?.limit ||
-        data?.pagination?.limit ||
-        10
-
-      const pages =
-        data?.totalPages ||
-        data?.pagination?.totalPages ||
-        Math.ceil(total / limit) ||
-        1
-
-      setTotalPages(pages)
+      setTotalPages(res?.pagination?.totalPages ?? 1)
     } catch (err) {
       console.error('Failed to load bookings:', err)
       setBookings([])
@@ -181,6 +163,7 @@ export default function BookingsPage() {
         <BookingTable
           bookings={bookings}
           loading={loading}
+          resourceMap={resourceMap}
           onView={setViewBooking}
           onCancel={(b) => setConfirmCancel(b)}
           onApprove={isAdmin ? (b) => setConfirmApprove(b) : null}
@@ -210,8 +193,8 @@ export default function BookingsPage() {
             {[
               ['ID', `#${viewBooking.id}`],
               ['Status', <StatusBadge status={viewBooking.status} />],
-              ['Resource ID', viewBooking.resourceId],
-              ['User ID', viewBooking.userId],
+              ['Resource', resourceMap[viewBooking.resourceId] || `#${viewBooking.resourceId}`],
+              ['User', viewBooking.userName || viewBooking.userEmail || `User #${viewBooking.userId}`],
               ['Start', fmt(viewBooking.startTime)],
               ['End', fmt(viewBooking.endTime)],
               ['Created', fmt(viewBooking.createdAt)],
