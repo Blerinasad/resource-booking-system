@@ -170,7 +170,7 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="mb-2">
         <h2 className="font-display text-2xl font-bold text-white">
-          {greeting}, {user?.name?.split(' ')[0]} 👋
+          {greeting}, {user?.name?.split(' ')[0]}
         </h2>
 
         <p className="text-sm text-slate-400 mt-1">
